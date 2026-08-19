@@ -1,8 +1,25 @@
+# Dependencies
+node_modules/
+
+# Biến môi trường - KHÔNG BAO GIỜ commit
+.env
+.env.local
+.env.*.local
+
+# Build output
+dist/
+build/
+
+# Log files
 *.log
-*.tmp
-bin/
+npm-debug.log*
+
+# Editor / OS
+.DS_Store
+.vscode/*
+!.vscode/extensions.jsonnode_modules/
+.env
+.env.local
+dist/
 build/
 *.log
-*.tmp
-pycache/
-.env

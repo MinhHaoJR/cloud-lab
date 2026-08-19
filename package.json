@@ -1,0 +1,21 @@
+{
+  "name": "cloud-lab",
+  "version": "1.0.0",
+  "description": "- Student Name: Nguyen Minh Hao - Student ID: 235304 - Class: DH23TIN06",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MinhHaoJR/cloud-lab.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/MinhHaoJR/cloud-lab/issues"
+  },
+  "homepage": "https://github.com/MinhHaoJR/cloud-lab#readme"
+}
