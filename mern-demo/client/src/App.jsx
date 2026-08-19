@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
 import './App.css';
 
-// Đã cập nhật đúng URL public port 5000 trên Codespaces của bạn
-const API_URL = 'https://didactic-couscous-wrxjjq9gpp4jc5p5-5000.app.github.dev/api/students';
+const API_URL = `${import.meta.env.VITE_API_URL || '/api/students'}`;
 
 function App() {
   const [students, setStudents] = useState([]);
@@ -13,8 +12,11 @@ function App() {
   const fetchStudents = async () => {
     try {
       const res = await fetch(API_URL);
+      if (!res.ok) {
+        throw new Error(`API trả về lỗi ${res.status}`);
+      }
       const data = await res.json();
-      setStudents(data);
+      setStudents(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error("Lỗi fetch sinh viên:", err);
     }
