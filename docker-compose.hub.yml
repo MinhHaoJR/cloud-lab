@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  backend:
+    image: mhaojr/mern-backend:latest
+    ports:
+      - "5000:5000"
+    environment:
+      - MONGODB_URI=mongodb+srv://labuser:minhhao2803@cluster0.ledzmzf.mongodb.net/cloud_lab?retryWrites=true&w=majority&appName=Cluster0$
+  frontend:
+    image: mhaojr/mern-frontend:2.0
+    ports:
+      - "5173:5173"

@@ -63,7 +63,7 @@ function App() {
 
   return (
     <div style={{ maxWidth: 600, margin: '40px auto', fontFamily: 'sans-serif' }}>
-      <h1>Quản lý sinh viên</h1>
+      <h1>Quản lý sinh viên Nam Cần Thơ</h1>
 
       {/* Câu 48: Form nhập liệu */}
       <form onSubmit={handleSubmit} style={{ marginBottom: 24 }}>
