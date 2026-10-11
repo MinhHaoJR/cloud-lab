@@ -32,6 +32,15 @@ app.use(cors({
 
 app.use(express.json());
 
+// Ghi phương thức, đường dẫn và trạng thái để đối chiếu CRUD trong Render Logs.
+app.use('/api', (req, res, next) => {
+  const started = Date.now();
+  res.on('finish', () => {
+    console.log(`${req.method} ${req.originalUrl} ${res.statusCode} ${Date.now() - started}ms`);
+  });
+  next();
+});
+
 // ==================== ROUTES CƠ BẢN ====================
 
 app.get('/', (req, res) => {
@@ -116,7 +125,7 @@ app.put('/api/students/:id', async (req, res) => {
     const updated = await Student.findByIdAndUpdate(
       id,
       req.body,
-      { new: true, runValidators: true }
+      { returnDocument: 'after', runValidators: true }
     );
 
     if (!updated) {
@@ -165,7 +174,7 @@ mongoose
     console.log(`   Database: ${mongoose.connection.name}`);
 
     app.listen(PORT, '0.0.0.0', () => {
-      console.log(`🚀 Server đang chạy tại http://localhost:${PORT}`);
+      console.log(`🚀 MERN Backend v2.0 đang chạy tại http://localhost:${PORT}`);
     });
   })
   .catch((err) => {
