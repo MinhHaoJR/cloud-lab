@@ -8,7 +8,28 @@ const Student = require('./models/Student');
 
 const app = express();
 
-app.use(cors());
+// ==================== CẤU HÌNH CORS (CÂU 58) ====================
+// Đọc Domain Frontend được phép từ biến môi trường CLIENT_URL
+const allowedOrigins = [
+  process.env.CLIENT_URL,
+  'http://localhost:5173',
+  'http://localhost:3000'
+]
+  .filter(Boolean)
+  .map((url) => url.replace(/\/$/, '')); // bỏ dấu "/" cuối nếu có
+
+app.use(cors({
+  origin: function (origin, callback) {
+    // Không có origin (curl, Postman) hoặc origin nằm trong danh sách: cho phép
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(null, false); // origin lạ: không trả header CORS, trình duyệt sẽ chặn
+    }
+  },
+  credentials: true
+}));
+
 app.use(express.json());
 
 // ==================== ROUTES CƠ BẢN ====================
@@ -35,6 +56,23 @@ app.get('/api/hello', (req, res) => {
       : 'Chưa kết nối',
     time: new Date().toISOString()
   });
+});
+
+// Readiness: a running HTTP server alone does not prove database connectivity.
+app.get(['/health', '/api/health'], (req, res) => {
+  const connected = mongoose.connection.readyState === 1;
+  res.status(connected ? 200 : 503).json({
+    status: connected ? 'UP' : 'DOWN',
+    database: connected ? 'connected' : 'disconnected',
+    uptime: process.uptime()
+  });
+});
+
+app.use('/api/students', (req, res, next) => {
+  if (mongoose.connection.readyState !== 1) {
+    return res.status(503).json({ error: 'Chưa kết nối cơ sở dữ liệu. Vui lòng thử lại.' });
+  }
+  next();
 });
 
 // ============ CÂU 36: LẤY DANH SÁCH SINH VIÊN ============
@@ -115,8 +153,13 @@ app.delete('/api/students/:id', async (req, res) => {
 // ==================== KẾT NỐI DB & KHỞI ĐỘNG ====================
 const PORT = process.env.PORT || 5000;
 
+if (!process.env.MONGODB_URI) {
+  console.error('Thiếu MONGODB_URI: cấu hình biến này trên Render Backend.');
+  process.exit(1);
+}
+
 mongoose
-  .connect(process.env.MONGODB_URI)
+  .connect(process.env.MONGODB_URI, { serverSelectionTimeoutMS: 10000 })
   .then(() => {
     console.log('✅ Đã kết nối MongoDB Atlas thành công');
     console.log(`   Database: ${mongoose.connection.name}`);
