@@ -43,17 +43,17 @@ app.use('/api', (req, res, next) => {
 
 // ==================== ROUTES CƠ BẢN ====================
 
-app.get('/', (req, res) => {
-  res.json({
-    message: 'MERN Backend API - Buổi 2',
-    endpoints: {
-      hello: 'GET /api/hello',
-      list: 'GET /api/students',
-      create: 'POST /api/students',
-      update: 'PUT /api/students/:id',
-      remove: 'DELETE /api/students/:id'
-    }
-  });
+app.get('/', async (req, res) => {
+  if (mongoose.connection.readyState !== 1) {
+    return res.status(503).json({ error: 'Chưa kết nối cơ sở dữ liệu. Vui lòng thử lại.' });
+  }
+
+  try {
+    const students = await Student.find().sort({ createdAt: -1 });
+    res.json(students);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 app.get('/api/hello', (req, res) => {
@@ -88,6 +88,48 @@ app.use('/api/students', (req, res, next) => {
 app.get('/api/students', async (req, res) => {
   try {
     const students = await Student.find().sort({ createdAt: -1 });
+
+    // Render a readable page for direct browser visits; keep JSON for API clients.
+    if (req.get('Accept')?.includes('text/html')) {
+      const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (character) => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+      })[character]);
+      const rows = students.length
+        ? students.map((student) => `
+          <tr>
+            <td>${escapeHtml(student.studentId)}</td>
+            <td>${escapeHtml(student.name)}</td>
+            <td>${escapeHtml(student.email)}</td>
+          </tr>`).join('')
+        : '<tr><td colspan="3">Chưa có sinh viên trong cơ sở dữ liệu.</td></tr>';
+
+      return res.type('html').send(`<!doctype html>
+        <html lang="vi">
+          <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1">
+            <title>Danh sách sinh viên</title>
+            <style>
+              body { max-width: 900px; margin: 40px auto; padding: 0 16px; font: 16px Arial, sans-serif; }
+              table { width: 100%; border-collapse: collapse; }
+              th, td { padding: 10px; border: 1px solid #ccc; text-align: left; }
+              th { background: #f2f4f7; }
+            </style>
+          </head>
+          <body>
+            <h1>Danh sách sinh viên</h1>
+            <table>
+              <thead><tr><th>MSSV</th><th>Họ tên</th><th>Email</th></tr></thead>
+              <tbody>${rows}</tbody>
+            </table>
+          </body>
+        </html>`);
+    }
+
     res.json(students);
   } catch (err) {
     res.status(500).json({ error: err.message });
